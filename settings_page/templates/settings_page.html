@@ -1,0 +1,54 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings Panel</title>
+    <link rel="stylesheet" href="{% static 'settings.css' %}">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+</head>
+<body>
+    <div class="main-container">
+        <div class="sidebar">
+            <div>
+                <img src="{% static 'images/logo_w.png' %}" alt="Logo" class="sidebar-logo">
+                <div class="sidebar-buttons-top">
+                    <button id="button1" class="sidebar-button"></button>
+                    <button id="button2" class="sidebar-button"></button>
+                    <button id="button3" class="sidebar-button"></button>
+                </div>
+            </div>
+            <div class="sidebar-buttons-bottom">
+                <button id="button4" class="sidebar-button"></button>
+            </div>
+        </div>
+
+        <div class="centered-container">
+            <div class="settings-panel">
+                <div class="panel personal-info">
+                    <h2>Personal Account</h2>
+                    <p>Email: user@example.com</p>
+                    <p>Username: User123</p>
+                    <p>API Key: abcd1234xyz</p>
+                    <button class="logout-button">Logout</button>
+                    <button class="delete-button">Delete Account</button>
+                </div>
+
+                <div class="panel faq-section">
+                    <h2>FAQs</h2>
+                    <ul>
+                        <li>FAQ 1: Template text here.</li>
+                        <li>FAQ 2: Template text here.</li>
+                        <li>FAQ 3: Template text here.</li>
+                        <li>FAQ 4: Template text here.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% csrf_token %}
+    <script src="{% static 'settings.js' %}"></script>
+</body>
+</html>
