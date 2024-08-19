@@ -12,9 +12,11 @@ document.addEventListener('DOMContentLoaded', function() {
     submitButton.addEventListener('click', handleSubmit);
     content.addEventListener('keydown', handleKeyDown);
     content.addEventListener('input', handleInput);
+
+    button1.addEventListener('click', handleButton1Click);
     button2.addEventListener('click', handleButton2Click);
-    button3.addEventListener('click', handleButton3Click); // Associate with button 3
-    button3.addEventListener('click', handleButton4Click); // Associate with button 3
+    button3.addEventListener('click', handleButton3Click);
+    button4.addEventListener('click', handleButton4Click);
     recordButton.addEventListener('click', handleRecordButtonClick);
 
     function handleRecordButtonClick() {
@@ -108,7 +110,10 @@ document.addEventListener('DOMContentLoaded', function() {
         chatLog.scrollTop = chatLog.scrollHeight;
     }
 
-
+    async function handleButton1Click() {
+        console.log('Button 1 clicked, redirecting to the projects page...');
+        window.location.href = 'http://127.0.0.1:8000/home/';
+    }
     async function handleButton2Click() {
         console.log('Button 2 clicked, redirecting to the projects page...');
         window.location.href = 'http://127.0.0.1:8000/projects/';
@@ -116,4 +121,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     async function handleButton3Click() {
         console.log('Button 3 clicked, redirecting to another page...');
-        windo
+        window.location.href = 'http://127.0.0.1:8000/discover/'; 
+    }
+    async function handleButton4Click() {
+        console.log('Button 4 clicked, redirecting to another page...');
+        window.location.href = 'http://127.0.0.1:8000/settings/'; 
+    }
+
+    content.focus();
+});
