@@ -12,11 +12,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-@login_required
 def home_view(request):
     return render(request, 'index.html')
 
-@login_required
 def projects_view(request):
     return render(request, 'projects.html')
 

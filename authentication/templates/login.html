@@ -2,13 +2,134 @@
 <html>
 <head>
     <title>Login</title>
+    <style>
+        body, html {
+            font-family: Arial, sans-serif;
+            height: 100%;
+            margin: 0;
+            background-color: #181a1b;
+            color: #a0a0a0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .top-left-container {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .top-left-container img {
+            max-height: 50px;
+            margin-right: 10px;
+        }
+
+        .top-left-container h2 {
+            margin: 0;
+            color: white;
+            font-weight: normal;
+        }
+
+        h1 {
+            margin: 10px 0;
+            font-family: 'Avenir', sans-serif;
+            font-size: 40px;
+            font-weight: normal;
+            color: white;
+            text-align: center;
+        }
+
+        h2 {
+            color: white;
+            font-weight: normal;
+            margin-bottom: 20px;
+            text-align: center;
+            width: 100%;
+        }
+
+        .form-container {
+            width: 400px;
+            padding: 0 10px;
+            box-sizing: border-box;
+        }
+
+        form {
+            width: 100%;
+        }
+
+        label {
+            display: block;
+            text-align: left;
+            margin-bottom: 5px;
+            font-size: 16px;
+            color: #a0a0a0;
+        }
+
+        input[type="text"],
+        input[type="password"],
+        input {
+            width: 700px !important;
+            max-width: 100% !important;
+            margin-bottom: 5px;
+            border: 1.5px solid #353536;
+            background-color: #202222;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-family: 'Avenir', sans-serif;
+            font-size: 16px;
+            outline: none;
+            caret-color: #f16f33;
+            height: 50px;
+        }
+
+        button {
+            width: 700px !important;
+            max-width: 100% !important;
+            padding: 15px;
+            font-size: 18px;
+            text-align: center;
+            color: white;
+            background-color: #f16f33;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #e98658;
+        }
+
+        /* Force all form elements to be 700px wide */
+        form * {
+            width: 700px !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+        }
+    </style>
 </head>
 <body>
-    <h2>Login</h2>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Login</button>
-    </form>
+    {% load static %}
+    
+    <div class="top-left-container">
+        <img src="{% static 'images/logo_w.png' %}" alt="Logo" class="sidebar-logo">
+        <h2>Duality</h2>
+    </div>
+
+    <div class="form-container">
+        <form method="post">
+            {% csrf_token %}
+            <h1>Login</h1>
+            {{ form.as_p }}
+            <button type="submit">Login</button>
+        </form>
+    </div>
 </body>
 </html>

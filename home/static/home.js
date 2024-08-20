@@ -19,14 +19,43 @@ document.addEventListener('DOMContentLoaded', function() {
     button4.addEventListener('click', handleButton4Click);
     recordButton.addEventListener('click', handleRecordButtonClick);
 
+    let isRecording = false;
+
     function handleRecordButtonClick() {
-        recordButton.classList.toggle('recording-active');
+        const newRecordingState = !isRecording;
+        const url = newRecordingState ? 'http://127.0.0.1:8000/home/recording_start/' : 'http://127.0.0.1:8000/home/recording_end/';
         
-        if (recordButton.classList.contains('recording-active')) {
-            recordText.textContent = 'Stop';
+        // Immediately update UI
+        isRecording = newRecordingState;
+        updateRecordButtonUI();
+
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': getCSRFToken(),
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log(data.status);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('There was a problem with the recording request.');
+            // Revert the UI if there was an error
+            isRecording = !newRecordingState;
+            updateRecordButtonUI();
+        });
+    }
+
+    function updateRecordButtonUI() {
+        recordButton.classList.toggle('recording-active', isRecording);
+        recordText.textContent = isRecording ? 'Stop' : 'Record Task';
+        
+        if (isRecording) {
             addMessageToChatLog("Recording in progress", 'agent');
         } else {
-            recordText.textContent = 'Record Task';
             addMessageToChatLog("Recording Stopped. \nWhat would you like to name the task?", 'agent');
         }
         
@@ -114,6 +143,7 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('Button 1 clicked, redirecting to the projects page...');
         window.location.href = 'http://127.0.0.1:8000/home/';
     }
+
     async function handleButton2Click() {
         console.log('Button 2 clicked, redirecting to the projects page...');
         window.location.href = 'http://127.0.0.1:8000/projects/';
@@ -123,6 +153,7 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('Button 3 clicked, redirecting to another page...');
         window.location.href = 'http://127.0.0.1:8000/discover/'; 
     }
+
     async function handleButton4Click() {
         console.log('Button 4 clicked, redirecting to another page...');
         window.location.href = 'http://127.0.0.1:8000/settings/'; 
