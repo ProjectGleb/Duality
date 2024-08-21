@@ -1,24 +1,38 @@
 from django.db import models
-from django.contrib.auth.models import User  # Import the built-in User model
+from django.contrib.auth.models import User
+from django.utils import timezone
+import json
 
-class UserProject(models.Model):
-    title = models.CharField(max_length=100)
-    description = models.TextField(null=True, blank=True)
+class Project(models.Model):
+    name = models.CharField(max_length=100)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='projects')
-    created_at = models.DateTimeField(auto_now_add=True)
-    
-    def __str__(self):
-        return self.title
+    created_at = models.DateTimeField(default=timezone.now)
 
-class UserTask(models.Model):
-    project = models.ForeignKey(UserProject, on_delete=models.CASCADE, related_name='tasks')
-    title = models.CharField(max_length=100)
-    description = models.TextField(null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    success_rate = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
-    
     def __str__(self):
-        return f"{self.title} (Project: {self.project.title})"
+        return self.name
+
+    @property
+    def task_count(self):
+        return self.tasks.count()
+
+class Task(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True, null=True)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='tasks')
+    steps = models.JSONField()
+    created_at = models.DateTimeField(default=timezone.now)
+    success_rate = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.name} (Project: {self.project.name})"
+
+    def set_steps_from_json(self, json_file_path):
+        with open(json_file_path, 'r') as file:
+            self.steps = json.load(file)
+        self.save()
+
+
+# ------------------------------------------  Make a db for the discover page ------------------------------------------
     
     
 # EXPLANATION 

@@ -36,43 +36,18 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td><a href="#" class="project-name" data-project-id="1">Codeverse</a></td>
-                                <td>5</td>
-                                <td>2023/08/15</td>
-                                <td>Gleb Razgar</td>
+                            {% for project in projects %}
+                            <tr class="project-row" data-project-id="{{ project.id }}">
+                                <td><span class="project-name">{{ project.name }}</span></td>
+                                <td>{{ project.task_count }}</td>
+                                <td>{{ project.created_at|date:"Y/m/d" }}</td>
+                                <td>{{ project.user.username }}</td>
                                 <td>
                                     <button class="edit-btn">Edit</button>
                                     <button class="delete-btn">Delete</button>
                                 </td>
                             </tr>
-                            <!-- Add more project rows as needed -->
-                        </tbody>
-                        <tbody>
-                            <tr>
-                                <td><a href="#" class="project-name" data-project-id="1">Github</a></td>
-                                <td>7</td>
-                                <td>2023/08/15</td>
-                                <td>Gleb Razgar</td>
-                                <td>
-                                    <button class="edit-btn">Edit</button>
-                                    <button class="delete-btn">Delete</button>
-                                </td>
-                            </tr>
-                            <!-- Add more project rows as needed -->
-                        </tbody>
-                        <tbody>
-                            <tr>
-                                <td><a href="#" class="project-name" data-project-id="1">Bright Manager</a></td>
-                                <td>4</td>
-                                <td>2023/08/15</td>
-                                <td>Gleb Razgar</td>
-                                <td>
-                                    <button class="edit-btn">Edit</button>
-                                    <button class="delete-btn">Delete</button>
-                                </td>
-                            </tr>
-                            <!-- Add more project rows as needed -->
+                            {% endfor %}
                         </tbody>
                     </table>
                     <table id="tasksTable" class="projects-table" style="display: none;">
@@ -80,9 +55,8 @@
                             <tr>
                                 <th>Task</th>
                                 <th>Description</th>
-                                <th>Task Steps</th>
-                                <th>Created On</th>
-                                <th>Success</th>
+                                <th>Steps</th>
+                                <th>Success %</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>

@@ -12,6 +12,7 @@ from dotenv import load_dotenv
 from pathlib import Path
 from mss import mss
 import base64
+import shutil
 
 # Global variables to manage recording state
 recording_thread = None
@@ -20,6 +21,12 @@ stop_recording = threading.Event()
 SNAPSHOT_DIR = Path(__file__).resolve().parent
 output_folder = SNAPSHOT_DIR / "recording_outputs"
 
+def clear_output_folder(folder):
+    for item in folder.iterdir():
+        if item.is_file() or item.is_symlink():
+            item.unlink()
+        elif item.is_dir():
+            shutil.rmtree(item)
 
 @csrf_exempt
 def recording_start(request):
@@ -37,32 +44,15 @@ def recording_start(request):
 
     return JsonResponse({'status': 'Invalid request'}, status=400)
 
-@csrf_exempt
-def recording_end(request):
-    global recording_thread, stop_recording
-
-    if request.method == 'POST':
-        if recording_thread:
-            # Stop recording
-            stop_recording.set()
-            recording_thread.join()
-            recording_thread = None
-            
-            # Process the recorded data
-            gpt_video_parser_view(output_folder)
-            
-            return JsonResponse({'status': 'Recording stopped and processed'})
-        else:
-            return JsonResponse({'status': 'No recording in progress'}, status=400)
-
-    return JsonResponse({'status': 'Invalid request'}, status=400)
-
 def record_function():
     # Load environment variables from the .env file
     load_dotenv()
     
     # Use pathlib for cross-platform compatibility
     output_folder.mkdir(parents=True, exist_ok=True)
+
+    # Clear the output folder before starting a new recording
+    clear_output_folder(output_folder)
 
     # Initialize audio recording parameters
     audio_output_file = output_folder / "output_audio.wav"
@@ -164,6 +154,27 @@ def record_function():
     else:
         print("Audio file not found. Skipping transcription.")
 
+@csrf_exempt
+def recording_end(request):
+    global recording_thread, stop_recording
+
+    if request.method == 'POST':
+        if recording_thread:
+            # Stop recording
+            stop_recording.set()
+            recording_thread.join()
+            recording_thread = None
+            
+            # Process the recorded data
+            gpt_video_parser_view(output_folder)
+            
+            return JsonResponse({'status': 'Recording stopped and processed'})
+        else:
+            return JsonResponse({'status': 'No recording in progress'}, status=400)
+
+    return JsonResponse({'status': 'Invalid request'}, status=400)
+
+
 def gpt_video_parser_view(folder_path):
     load_dotenv()
 
@@ -174,7 +185,15 @@ def gpt_video_parser_view(folder_path):
     openai_client = OpenAI()
 
     def describe_descriptions(frames, transcribed_text, iterations=3, skip_frames=10):
-        system_prompt = f"You're an AI agent that based on a user web interaction video transcribes user actions one at a time. If it's a 'Type' action, it must be in the format of 'Type': 'element_to_be_interacted_with': 'text_to_be_typed_in'.\n If it's a 'Click' action, it must be in the format of 'Click': 'element_to_be_interacted_with'.\n The element_to_be_interacted_with must end with '_btn' if it's a button or '_box' if it's a text box.\n Always start with 'Website: ' as the first line, followed by the website of focus. The second task is almost always accept all cookies button.  Here is the user explaining what they're doing, use this to make sense of the video as well: {transcribed_text}. Don't use natural language. Don't provide any other explanation."
+        system_prompt = f"""You're an AI transcription agent that takes in a video of a user interracting with the web and transcribes his actions one at a time. Your goal is to transcribe those actions in a json format.
+        - Given there are only two actions a user can take, click or type, if it's a 'Type' action, it must be in the double nested dictionary json format format like so: {{"Type": {{"web_page_element": "text_that_was_typed"}}}}. If it's a 'Click' action, it must be in a simple dictionary json format like so: {{"Click": "element_to_be_interacted_with"}}.
+        - In the transcription you should ensure web_page_element ends with '_btn' if it's a button or '_box' if it's a text box.
+        - By default, the first two actions you must put in in the json transcript are 'Click0': 'accept_all_btn' and the second one is'Type0': {{"google_search_box": "text_that_was_typed"}} entering the website that user typed in in place of text_that_was_typed.acordingly. Everything that follows is as per your observation of user actions.
+        - Hre is a voice note transcipt by the useer explaining what actions he is taking as he is making them. Use it to make sense of the video as well and make your json transcript. Voice_Note_Transcript: {transcribed_text}. 
+        - Lastly, don't add any natural language or other explanations. Your output must be in json format, meaning it should begin and end with curly braces.
+        EXAMPLE OF A GOOD OUTPUT: {{"Click0": "accept_all_btn", "Type0": {{"google_search_box": "codeverse.uk"}}}}\n
+        Dont use ```json and ```to begin and end the file. Just use curly brackets."""
+
 
         PROMPT_MESSAGES = [
         {
@@ -226,8 +245,81 @@ def gpt_video_parser_view(folder_path):
 
     # Summarize descriptions
     summary = describe_descriptions(base64Frames, transcribed_text, iterations=1, skip_frames=20)
-    
-    with open(folder_path / "new_task.txt", "w") as text_file:
-        text_file.write(summary)
 
-    print("Task steps have been generated and saved to new_task.txt")
+    # Attempt to parse the summary as JSON
+    try:
+        json_data = json.loads(summary)
+    except json.JSONDecodeError:
+        print('JSON parsing failed. Saving raw summary.')
+        json_data = {"error": "JSON parsing failed", "raw_summary": summary}
+
+    # Write the JSON data to the file
+    with open(folder_path / "new_task.json", "w") as json_file:
+        json.dump(json_data, json_file, indent=4)
+
+    print("Task steps have been generated and saved to new_task.json")
+
+
+# ------------------------------------------    
+# Save the task and project to the database
+# ------------------------------------------    
+
+
+# ------------------------------------------    Add chatGPT funciton calling to save the task as json properly ------------------------------------------
+
+# json file saved to database prematurely and isnt saved to jaon. 
+# Review why. Is it not saved because of x? or because of y?
+
+
+from django.views.decorators.http import require_POST
+import json
+from .models import Task, Project
+from django.contrib.auth.models import User
+
+@csrf_exempt
+@require_POST
+def save_task_to_project(request):
+    try:
+        data = json.loads(request.body)
+        task_name = data.get('task_name')
+        project_name = data.get('project_name')
+
+        # Assuming the user is authenticated, get the current user
+        user = request.user
+        if not user.is_authenticated:
+            return JsonResponse({'status': 'error', 'message': 'User not authenticated'}, status=401)
+
+        # Get or create the project
+        project, created = Project.objects.get_or_create(
+            name=project_name,
+            user=user
+        )
+
+        # Check if the new_task.json file exists and wait for it if necessary
+        json_file_path = output_folder / "new_task.json"
+        wait_time = 0
+        while not json_file_path.exists() and wait_time < 60:  # Wait up to 60 seconds
+            time.sleep(1)
+            wait_time += 1
+
+        if not json_file_path.exists():
+            return JsonResponse({'status': 'error', 'message': 'Task processing not complete'}, status=400)
+
+        # Read and parse the JSON file
+        with open(json_file_path, "r") as json_file:
+            task_steps = json.load(json_file)
+
+        # Create the task
+        task = Task.objects.create(
+            name=task_name,
+            project=project,
+            steps=task_steps 
+        )
+        print(f"Saved Project: {project.name} (ID: {project.id})")
+        print(f"Saved Task: {task.name} (ID: {task.id})")
+        print(f"Task Steps: {task.steps}")
+
+
+        return JsonResponse({'status': 'success', 'message': 'Task details saved successfully'})
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=400)    

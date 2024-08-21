@@ -101,11 +101,11 @@ h1.clickable-title:hover {
 }
 
 /* Column widths for projects table */
-.projects-table th:nth-child(1), .projects-table td:nth-child(1) { width: 25%; }
-.projects-table th:nth-child(2), .projects-table td:nth-child(2) { width: 15%; }
-.projects-table th:nth-child(3), .projects-table td:nth-child(3) { width: 20%; }
-.projects-table th:nth-child(4), .projects-table td:nth-child(4) { width: 20%; }
-.projects-table th:nth-child(5), .projects-table td:nth-child(5) { width: 20%; }
+#tasksTable th:nth-child(1), #tasksTable td:nth-child(1) { width: 20%; }
+#tasksTable th:nth-child(2), #tasksTable td:nth-child(2) { width: 25%; }
+#tasksTable th:nth-child(3), #tasksTable td:nth-child(3) { width: 25%; }
+#tasksTable th:nth-child(4), #tasksTable td:nth-child(4) { width: 15%; }
+#tasksTable th:nth-child(5), #tasksTable td:nth-child(5) { width: 15%; }
 
 /* Column widths for tasks table */
 #tasksTable th:nth-child(1), #tasksTable td:nth-child(1) { width: 15%; }
@@ -130,7 +130,8 @@ h1.clickable-title:hover {
 }
 
 .edit-btn,
-.delete-btn {
+.delete-btn,
+.run-btn {
     padding: 5px 10px;
     margin: 0 5px;
     border: none;
@@ -151,6 +152,11 @@ h1.clickable-title:hover {
     color: white;
 }
 
+.run-btn {
+    background-color: #4CAF50;
+    color: white;
+}
+
 .edit-btn:hover {
     background-color: #f16f33;
 }
@@ -159,30 +165,24 @@ h1.clickable-title:hover {
     background-color: #d62b2b;
 }
 
-.expandable-cell {
+.run-btn:hover {
+    background-color: #45a049;
+}
+
+.expandable-row {
     cursor: pointer;
-    position: relative;
-    max-width: 200px;
-    padding-right: 25px !important;
 }
 
-.expandable-cell::after {
-    content: '▼';
-    position: absolute;
-    right: 10px;
-    top: 12px;
-    font-size: 10px;
-    color: #a0a0a0;
-    transition: transform 0.3s ease;
+.expandable-row:hover {
+    background-color: #2a2c2c;
 }
 
-.expandable-cell.expanded::after {
-    transform: rotate(180deg);
+.expandable-row .expandable-content {
+    display: none;
 }
 
-.expandable-cell.expanded {
-    white-space: normal;
-    word-wrap: break-word;
+.expandable-row.expanded .expandable-content {
+    display: table-row;
 }
 
 tr .expandable-cell {
@@ -288,5 +288,3 @@ tr.expanded td {
     background-image: url('images/gear_w.png');
     background-color:  #f16f33;
 }
-
-

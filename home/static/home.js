@@ -20,6 +20,9 @@ document.addEventListener('DOMContentLoaded', function() {
     recordButton.addEventListener('click', handleRecordButtonClick);
 
     let isRecording = false;
+    let isNamingTask = false;
+    let isSelectingProject = false;
+    let currentTaskName = '';
 
     function handleRecordButtonClick() {
         const newRecordingState = !isRecording;
@@ -56,46 +59,115 @@ document.addEventListener('DOMContentLoaded', function() {
         if (isRecording) {
             addMessageToChatLog("Recording in progress", 'agent');
         } else {
-            addMessageToChatLog("Recording Stopped. \nWhat would you like to name the task?", 'agent');
+            askForTaskName();
         }
         
         scrollChatToBottom();
     }
+
+    function askForTaskName() {
+        addMessageToChatLog("What would you like to name the task?", 'agent');
+        scrollChatToBottom();
+        isNamingTask = true;
+    }
+
+    function askForProjectName() {
+        addMessageToChatLog("What project would you like to save this task to?", 'agent');
+        scrollChatToBottom();
+        isSelectingProject = true;
+    }
+
+    function handleSubmit() {
+        const message = content.value.trim();
+        if (message) {
+            if (isNamingTask) {
+                submitTaskName(message);
+            } else if (isSelectingProject) {
+                submitProjectName(message);
+            } else {
+                submitRegularMessage(message);
+            }
+            clearInput();
+            scrollChatToBottom();
+        }
+    }
+
+    function submitTaskName(taskName) {
+        addMessageToChatLog(`Task name: ${taskName}`, 'user');
+        currentTaskName = taskName;
+        isNamingTask = false;
+        askForProjectName();
+    }
+
+    function submitProjectName(projectName) {
+        addMessageToChatLog(`Project name: ${projectName}`, 'user');
+        sendTaskDetailsToBackend(currentTaskName, projectName);
+        isSelectingProject = false;
+        addMessageToChatLog("Task processing in progress...!", 'agent');
+    }
+
+    function submitRegularMessage(message) {
+        addMessageToChatLog(`${message}`, 'user');
+        console.log(`Task Executing: ${message}`);
+
+        fetch('http://127.0.0.1:8000/home/process_input/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken(),
+            },
+            body: JSON.stringify({ 'user_input': message }),
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            addMessageToChatLog(`Agent: ${data.result}`, 'agent');
+            scrollChatToBottom();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('There was a problem with your request.');
+        });
+    }
+
+    function sendTaskDetailsToBackend(taskName, projectName) {
+        const data = JSON.stringify({ 
+            'task_name': taskName,
+            'project_name': projectName
+        });
+
+        console.log('Sending data:', data); // Log the data being sent
+
+        fetch('http://127.0.0.1:8000/home/save_task_to_project/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken(),
+            },
+            body: data,
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Task details saved:', data);
+            addMessageToChatLog(`Task "${taskName}" saved to project "${projectName}"`, 'agent');
+        })
+        .catch(error => {
+            console.error('Error saving task details:', error);
+            addMessageToChatLog('Error saving task details. Please try again.', 'agent');
+        });
+    }
     
     function getCSRFToken() {
         return document.querySelector('[name=csrfmiddlewaretoken]').value;
-    }
-
-    async function handleSubmit() {
-        const message = content.value.trim();
-        if (message) {
-            addMessageToChatLog(`${message}`, 'user');
-            clearInput();
-            scrollChatToBottom();
-            console.log(`Task Executing: ${message}`);
-
-            try {
-                const response = await fetch('http://127.0.0.1:8000/home/process_input/', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': getCSRFToken(),
-                    },
-                    body: JSON.stringify({ 'user_input': message }),
-                });
-
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-
-                const data = await response.json();
-                addMessageToChatLog(`Agent: ${data.result}`, 'agent');
-                scrollChatToBottom();
-            } catch (error) {
-                console.error('Error:', error);
-                alert('There was a problem with your request.');
-            }
-        }
     }
 
     function handleKeyDown(event) {

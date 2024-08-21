@@ -12,28 +12,78 @@ document.addEventListener('DOMContentLoaded', function() {
     button3.addEventListener('click', handleButton3Click);
     button4.addEventListener('click', handleButton4Click);
 
-    // Add event listeners for project names
-    const projectNames = document.querySelectorAll('.project-name');
-    projectNames.forEach(projectName => {
-        projectName.addEventListener('click', handleProjectClick);
+    // Add event listeners for project rows
+    const projectRows = document.querySelectorAll('.project-row');
+    projectRows.forEach(row => {
+        row.addEventListener('click', handleProjectClick);
     });
 
-    // Add event listeners for edit and delete buttons
+    // Add event listeners for edit, delete, and run buttons
     const editButtons = document.querySelectorAll('.edit-btn');
     const deleteButtons = document.querySelectorAll('.delete-btn');
+    const runButtons = document.querySelectorAll('.run-btn');
     editButtons.forEach(button => button.addEventListener('click', handleEditClick));
     deleteButtons.forEach(button => button.addEventListener('click', handleDeleteClick));
+    runButtons.forEach(button => button.addEventListener('click', handleRunClick));
+
+    tasksTable.addEventListener('click', function(event) {
+        if (event.target.classList.contains('run-btn')) {
+            handleRunClick(event);
+        }
+    });
 
     function handleProjectClick(event) {
-        event.preventDefault();
-        const projectId = event.target.getAttribute('data-project-id');
-        console.log(`Project ${projectId} clicked. Showing tasks.`);
+        if (event.target.classList.contains('edit-btn') || event.target.classList.contains('delete-btn') || event.target.classList.contains('run-btn')) {
+            return; // Don't trigger row click for edit, delete, and run buttons
+        }
+        const projectId = event.currentTarget.getAttribute('data-project-id');
+        const projectName = event.currentTarget.querySelector('.project-name').textContent;
+        console.log(`Project ${projectId} clicked. Showing tasks for ${projectName}.`);
         projectsTable.style.display = 'none';
         tasksTable.style.display = 'table';
-        tableTitle.textContent = 'Tasks';
+        tableTitle.textContent = projectName;
         tableTitle.classList.add('clickable-title');
         tableTitle.addEventListener('click', showProjects);
-        // Here you would typically load tasks for the selected project
+        
+        // Fetch tasks for the selected project
+        fetch(`/projects/tasks/${projectId}/`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(tasks => {
+                console.log('Received tasks:', tasks);
+                const tasksTableBody = tasksTable.querySelector('tbody');
+                tasksTableBody.innerHTML = '';
+                if (tasks.length === 0) {
+                    tasksTableBody.innerHTML = '<tr><td colspan="5">No tasks found for this project.</td></tr>';
+                } else {
+                    tasks.forEach(task => {
+                        const row = `
+                            <tr class="expandable-row">
+                                <td>${task.name}</td>
+                                <td>${task.description || 'N/A'}</td>
+                                <td>${task.steps ? JSON.stringify(task.steps) : 'N/A'}</td>
+                                <td>${task.success_rate !== null ? task.success_rate + '%' : 'N/A'}</td>
+                                <td>
+                                    <button class="run-btn">Run</button>
+                                    <button class="edit-btn">Edit</button>
+                                    <button class="delete-btn">Delete</button>
+                                </td>
+                            </tr>
+                        `;
+                        tasksTableBody.insertAdjacentHTML('beforeend', row);
+                    });
+                }
+                addExpandableRowListeners();
+            })
+            .catch(error => {
+                console.error('Error fetching tasks:', error);
+                const tasksTableBody = tasksTable.querySelector('tbody');
+                tasksTableBody.innerHTML = '<tr><td colspan="5">Error loading tasks. Please try again.</td></tr>';
+            });
     }
 
     function showProjects() {
@@ -56,6 +106,13 @@ document.addEventListener('DOMContentLoaded', function() {
         // Implement delete functionality
     }
 
+    function handleRunClick(event) {
+        const taskName = event.target.closest('tr').querySelector('td:first-child').textContent;
+        console.log(`Run clicked for task: ${taskName}`);
+        // Implement run functionality here
+        alert(`Running task: ${taskName}`);
+    }
+
     async function handleButton1Click() {
         console.log('Button 1 clicked, redirecting to the home page...');
         window.location.href = 'http://127.0.0.1:8000/home/';
@@ -74,5 +131,14 @@ document.addEventListener('DOMContentLoaded', function() {
     async function handleButton4Click() {
         console.log('Button 4 clicked, redirecting to the settings page...');
         window.location.href = 'http://127.0.0.1:8000/settings/'; 
+    }
+
+    function addExpandableRowListeners() {
+        const expandableRows = document.querySelectorAll('.expandable-row');
+        expandableRows.forEach(row => {
+            row.addEventListener('click', function() {
+                this.classList.toggle('expanded');
+            });
+        });
     }
 });
