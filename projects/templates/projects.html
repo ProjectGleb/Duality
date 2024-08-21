@@ -1,0 +1,73 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projects and Tasks</title>
+    <link rel="stylesheet" href="{% static 'projects.css' %}">
+</head>
+<body>
+    <div class="main-container">
+        <div class="sidebar">
+            <div>
+                <img src="{% static 'images/logo_w.png' %}" alt="Logo" class="sidebar-logo">
+                <ul id="messageHistory"></ul>
+                <div class="sidebar-buttons-top">
+                    <button class="sidebar-button" id="button1"></button>
+                    <button class="sidebar-button" id="button2"></button>
+                    <button class="sidebar-button" id="button3"></button>
+                </div>
+            </div>
+            <button class="sidebar-button" id="button4"></button>
+        </div>
+        <div class="centered-container">
+            <div class="chat-interface">
+                <h1 id="tableTitle">Projects</h1>
+                <div class="projects-table-container">
+                    <table id="projectsTable" class="projects-table">
+                        <thead>
+                            <tr>
+                                <th>Project Name</th>
+                                <th>Tasks</th>
+                                <th>Created On</th>
+                                <th>Created By</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for project in projects %}
+                            <tr class="project-row" data-project-id="{{ project.id }}">
+                                <td><span class="project-name">{{ project.name }}</span></td>
+                                <td>{{ project.task_count }}</td>
+                                <td>{{ project.created_at|date:"Y/m/d" }}</td>
+                                <td>{{ project.user.username }}</td>
+                                <td>
+                                    <button class="edit-btn">Edit</button>
+                                    <button class="delete-btn">Delete</button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <table id="tasksTable" class="projects-table" style="display: none;">
+                        <thead>
+                            <tr>
+                                <th>Task</th>
+                                <th>Description</th>
+                                <th>Steps</th>
+                                <th>Success %</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Task rows will be dynamically added here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="{% static 'projects.js' %}"></script>
+</body>
+</html>

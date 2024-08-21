@@ -1,0 +1,8 @@
+
+Create a serializer (which converts data to json so that it can be sent via hhtp and also checks the data fields are present)
+
+- Every time someone clicks submit this should send a POST request to trigger the script execution. 
+- If person clicks record this should POST request to trigger recording logic. 
+- 
+
+Learn Django RESRT API
