@@ -1,7 +1,0 @@
-playwright 
-requests
-openai
-pyautogui
-sounddevice 
-soundfile
-agentql
