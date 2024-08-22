@@ -34,7 +34,7 @@ OPENAI_API_KEY=<OPENAI_API_GOES_HERE>
 
 ## Run 💥🏃‍♂️🔥
 To use the application:
-1. Run ``` python manage.py runserver``` to host a local server using django.
+1. Run ```python manage.py runserver``` to host a local server using django.
 2. Open the browser and type in the port as url ```http://127.0.0.1:8000/```.
 3. Enjoy :) Record tasks, execute them, and have a productive day!
 
