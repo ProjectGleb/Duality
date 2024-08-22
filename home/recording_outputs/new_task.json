@@ -3,8 +3,5 @@
     "Type0": {
         "google_search_box": "127.0.0.1:8000/home"
     },
-    "Click1": "future_btn",
-    "Click2": "where_future_begins_btn",
-    "Click3": "begins_btn",
-    "Click4": "stop_btn"
+    "Click1": "stop_btn"
 }

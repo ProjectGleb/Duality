@@ -47,4 +47,4 @@ class Task(models.Model):
 # title: The name of the task.
 # description: Optional text field for more details about the task.
 # created_at: Automatically records when the task was created.
-# success_rate: A decimal field to record the success rate of the task (op
+# success_rate: A decimal field to record the success rate of the task (optional).
