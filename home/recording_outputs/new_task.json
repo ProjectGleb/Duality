@@ -1,7 +1,9 @@
 {
     "Click0": "accept_all_btn",
     "Type0": {
-        "google_search_box": "127.0.0.1:8000/home"
+        "google_search_box": "127.0.0.1:8000/home/"
     },
-    "Click1": "stop_btn"
+    "Click1": "future_btn",
+    "Click2": "begins_btn",
+    "Click3": "stop_btn"
 }
