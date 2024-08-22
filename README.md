@@ -4,8 +4,8 @@
 ## Overview 🔎
 Duality is an AI agent crew that can take over your browser and complete tasks for you. 
 
-## Features 🧰:
-1. **Create a Screen Recording:**
+## Steps 🧰:
+1. **Task Recording:**
     - Record how you complete a task. The agent will use vision and audio to understand the steps you are taking.
 2. **Transcription:**
     - The recording is parsed into actionable steps using GPT4o.
